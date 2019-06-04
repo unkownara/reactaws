@@ -66,7 +66,7 @@ class Login extends React.Component {
                     <Message positive>
                         <Message.Header>Now You are an authorized user.</Message.Header>
                         <span> Token Expired? </span>
-                        <a style={{ cursor: "pointer" }} onClick={this.againLogin}> Login </a>
+                        <button className="reLoginLink" onClick={this.againLogin}> Login </button>
                     </Message>
                 </div>
             )
