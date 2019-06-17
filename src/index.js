@@ -5,6 +5,7 @@ import AWSCredentials from './Credentials';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import App from './App';
+import 'semantic-ui-css/semantic.min.css'
 
 Amplify.configure({
     Auth: {

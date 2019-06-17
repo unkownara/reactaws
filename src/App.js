@@ -4,6 +4,7 @@ import {Router, Route, Switch} from "react-router-dom";
 import Home from './Components/Home.js';
 import API from './Components/RestAPIJson.js';
 import Login from './Components/Login.js'
+import TableComponent from './Components/Table';
 import './App.css';
 import 'semantic-ui-css/semantic.min.css';
 
@@ -99,6 +100,11 @@ class App extends React.Component {
                                 default
                                 path="/home"
                                 component={Home}
+                            />
+                            <Route
+                                exact
+                                path="/table"
+                                component={TableComponent}
                             />
                         </Switch>
                     </Router>
