@@ -11,6 +11,7 @@ import 'semantic-ui-css/semantic.min.css';
 class App extends React.Component {
     state = {
         homeBorder: '0px',
+        tableBorder: '0px',
         apiBorder: '0px',
         loginBorder: '0px'
     }
@@ -19,14 +20,27 @@ class App extends React.Component {
         history.push('/home');
         this.setState({
             homeBorder: '3px',
+            tableBorder: '0px',
             apiBorder: '0px',
             loginBorder: '0px'
         })
     }
+
+    table = () => {
+        history.push('/table');
+        this.setState({
+            homeBorder: '0px',
+            tableBorder: '3px',
+            apiBorder: '0px',
+            loginBorder: '0px'
+        })
+    }
+
     api = () => {
         history.push('/restapi');
         this.setState({
             homeBorder: '0px',
+            tableBorder: '0px',
             apiBorder: '3px',
             loginBorder: '0px'
         })
@@ -35,6 +49,7 @@ class App extends React.Component {
         history.push('/login');
         this.setState({
             homeBorder: '0px',
+            tableBorder: '0px',
             apiBorder: '0px',
             loginBorder: '3px'
         })
@@ -45,18 +60,28 @@ class App extends React.Component {
         if (window.location.pathname === '/login')
             this.setState({
                 homeBorder: '0px',
+                tableBorder: '0px',
                 apiBorder: '0px',
                 loginBorder: '3px'
-            })
+            });
+        else if (window.location.pathname === '/table')
+            this.setState({
+                homeBorder: '0px',
+                tableBorder: '3px',
+                apiBorder: '0px',
+                loginBorder: '0px'
+            });
         else if (window.location.pathname === '/restapi')
             this.setState({
                 homeBorder: '0px',
+                tableBorder: '0px',
                 apiBorder: '3px',
                 loginBorder: '0px'
             })
         else
             this.setState({
                 homeBorder: '3px',
+                tableBorder: '0px',
                 apiBorder: '0px',
                 loginBorder: '0px'
             })
@@ -70,6 +95,8 @@ class App extends React.Component {
                         <ul>
                             <li><span onClick={this.home}
                                       style={{borderBottom: `${this.state.homeBorder} solid white`}}>Home</span></li>
+                            <li><span onClick={this.table}
+                                      style={{borderBottom: `${this.state.tableBorder} solid white`}}>Table</span></li>
                             <li><span onClick={this.api}
                                       style={{borderBottom: `${this.state.apiBorder} solid white`}}>RestApi</span></li>
                             <li><span onClick={this.login}
@@ -110,7 +137,7 @@ class App extends React.Component {
                     </Router>
                 </div>
             </div>
-        )
+        );
     }
 }
 
