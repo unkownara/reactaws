@@ -97,6 +97,20 @@ const TableHeader = (props) => {
 
 class TableContent extends React.Component {
 
+    state = {
+        dataList: [],
+        editableRowId : null,
+        name: '',
+        state: '',
+        city: ''
+    };
+
+    componentWillReceiveProps(props) {
+        this.setState({
+            dataList: props.dataList
+        })
+    }
+
     selectedRow = (data) => {
         console.log('Row data ', data);
         setInterval(() => {
@@ -104,25 +118,111 @@ class TableContent extends React.Component {
         }, 3000);
     };
 
+    editRow = (data) => {
+        this.setState({
+            editableRowId: data.id,
+            name: data.name,
+            state: data.state,
+            city: data.city
+        })
+    };
+
+    nameOnChange = (e) => {
+        this.setState({
+            name: e.target.value
+        })
+    };
+
+    cityOnChange = (e) => {
+        this.setState({
+            city: e.target.value
+        })
+    };
+
+    stateOnChange = (e) => {
+        this.setState({
+            state: e.target.value
+        })
+    };
+
+    selectedEditedRow = () => {
+        if(this.state.editableRowId !== null) {
+            let obj = {
+                id: this.state.editableRowId,
+                name: this.state.name,
+                city: this.state.city,
+                state: this.state.state
+            };
+            axios({
+                url: 'https://0fadggmpo7.execute-api.us-east-2.amazonaws.com/beta/sample-api/update/',
+                method: "POST",
+                data : {
+                    postInfo: obj
+                },
+                header: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            }).then(res => {
+            }).catch(err => {
+            });
+            let newDataList = Object.assign(this.state.dataList);
+            newDataList[this.state.editableRowId-1] = obj;
+            console.log('Edited row ', obj);
+            this.setState({
+                editableRowId: null,
+                dataList: newDataList
+            });
+        }
+    }
+
     render() {
-        if (this.props.dataList.length <= 0)
+        let {
+            editableRowId
+        } = this.state;
+
+        if (this.state.dataList.length <= 0)
             return null;
         else {
             return (
-                this.props.dataList && this.props.dataList.length > 0 && this.props.dataList.map((info, index) => {
-                    return (
-                        <React.Fragment key={index}>
-                            <Table.Row key={index}>
-                                <Table.Cell textAlign='center' width={1}>{info.id} .</Table.Cell>
-                                <Table.Cell width={4}>{info.name}</Table.Cell>
-                                <Table.Cell width={2}>{info.city}</Table.Cell>
-                                <Table.Cell width={1}>{info.state}</Table.Cell>
-                                <Table.Cell width={1}>
-                                    <Button primary onClick={() => this.selectedRow(info)}> Submit</Button>
-                                </Table.Cell>
-                            </Table.Row>
-                        </React.Fragment>
-                    );
+                this.state.dataList && this.state.dataList.length > 0 && this.state.dataList.map((info, index) => {
+                    {
+                        if(editableRowId !== info.id) {
+                        return (
+                            <React.Fragment key={index}>
+                                <Table.Row key={index}>
+                                    <Table.Cell textAlign='center' width={1}>{info.id} .</Table.Cell>
+                                    <Table.Cell width={4}>{info.name}</Table.Cell>
+                                    <Table.Cell width={2}>{info.city}</Table.Cell>
+                                    <Table.Cell width={1}>{info.state}</Table.Cell>
+                                    <Table.Cell width={1}>
+                                        <Button primary onClick={() => this.selectedRow(info)}> Submit</Button>
+                                    </Table.Cell>
+                                    <Table.Cell width={1}>
+                                        <Button onClick={() => this.editRow(info)}> Edit </Button>
+                                    </Table.Cell>
+                                </Table.Row>
+                            </React.Fragment>
+                        );
+                    } else {
+                        return (
+                            <React.Fragment key={index}>
+                                <Table.Row key={index}>
+                                    <Table.Cell textAlign='center' width={1}>{info.id} .</Table.Cell>
+                                    <Table.Cell width={4}><input value={this.state.name} onChange={this.nameOnChange}></input></Table.Cell>
+                                    <Table.Cell width={2}><input value={this.state.city} onChange={this.cityOnChange}></input></Table.Cell>
+                                    <Table.Cell width={1}><input value={this.state.state} onChange={this.stateOnChange}></input></Table.Cell>
+                                    <Table.Cell width={1}>
+                                        <Button primary onClick={() => this.selectedEditedRow(info.id)}> Submit</Button>
+                                    </Table.Cell>
+                                    {/* <Table.Cell width={1}>
+                                        <Button onClick={() => this.editRow(info)}> Edit </Button>
+                                    </Table.Cell> */}
+                                </Table.Row>
+                            </React.Fragment>
+                        )
+                    }
+                    }
                 })
             );
         }
