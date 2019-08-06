@@ -13,7 +13,8 @@ export default class TableComponent extends React.Component {
 
     state = {
         dataList: [],
-        isError: false
+        isError: false,
+        isLoaded: false
     };
 
     componentDidMount() {
@@ -29,7 +30,8 @@ export default class TableComponent extends React.Component {
             }
         }).then(res => {
             self.setState({
-                dataList : res.data.Items
+                dataList : res.data.Items,
+                isLoaded: true
             })
         }).catch(err => {
             self.setState({
@@ -81,30 +83,43 @@ export default class TableComponent extends React.Component {
             isError,
             dataList
         } = this.state;
-
-        if(isError) {
-            return (
-                <div className="centerAlignment">
-                    <div>
-                        <h1> Oops... Please check your network (: </h1>
+        if(this.state.isLoaded) {
+            if(isError) {
+                return (
+                    <div className="centerAlignment">
+                        <div>
+                            <h1> Oops... Please check your network (: </h1>
+                        </div>
+                        <div style={{ marginTop: '20px' }}>
+                            <Loader dimensions={'20px'}/>
+                        </div>
+                        <div className="centerAlignment" style={{ marginTop: '100px' }}>
+                            <Button primary onClick={this.retry}> Retry </Button>
+                        </div>
                     </div>
-                    <div style={{ marginTop: '20px' }}>
-                        <Loader dimensions={'20px'}/>
+                );
+            } else {
+                return (
+                    <div className="centerAlignment">
+                        <TableInput length={dataList.length} newRecord={this.newRecord}/>
+                {this.state.dataList.length > 0 ? <TableHeader dataList={dataList}/> : <NoDataFound /> }
                     </div>
-                    <div className="centerAlignment" style={{ marginTop: '100px' }}>
-                        <Button primary onClick={this.retry}> Retry </Button>
-                    </div>
-                </div>
-            );
+                );
+            }
         } else {
-            return (
-                <div className="centerAlignment">
-                    <TableInput length={dataList.length} newRecord={this.newRecord}/>
-                    <TableHeader dataList={dataList}/>
+            return <div className="centerAlignment">
+                    <Loader dimensions={'30px'} />
                 </div>
-            );
         }
     }
+}
+
+const NoDataFound = () => {
+    return (
+        <div className="centerAlignment">
+           <h4 style={{ fontSize: 20, marginTop: '100px' }}> No data found. Add user data. </h4>
+        </div>
+    )
 }
 
 const TableInput = (props) => {
@@ -176,7 +191,7 @@ const TableHeader = (props) => {
 class TableContent extends React.Component {
 
     state = {
-        dataList: [],
+        dataList: this.props.dataList,
         editableRowId : null,
         name: '',
         state: '',
@@ -258,10 +273,12 @@ class TableContent extends React.Component {
         let {
             editableRowId
         } = this.state;
+        console.log('heare', this.state.dataList);
 
         if (this.state.dataList.length <= 0)
             return null;
         else {
+            console.log('heare')
             return (
                 this.state.dataList && this.state.dataList.length > 0 && this.state.dataList.map((info, index) => {
                     {
