@@ -2,15 +2,19 @@ import React from 'react';
 import axios from 'axios';
 import {
     Table,
-    Button
+    Button,
+    Input
 } from 'semantic-ui-react';
 import Loader from "./Loader";
+import { useInput } from './useInput';
+import '../App.css';
 
 export default class TableComponent extends React.Component {
 
     state = {
         dataList: [],
-        isError: false
+        isError: false,
+        isLoaded: false
     };
 
     componentDidMount() {
@@ -26,7 +30,8 @@ export default class TableComponent extends React.Component {
             }
         }).then(res => {
             self.setState({
-                dataList : res.data.Items
+                dataList : res.data.Items,
+                isLoaded: true
             })
         }).catch(err => {
             self.setState({
@@ -39,39 +44,127 @@ export default class TableComponent extends React.Component {
         window.location.reload();
     };
 
+    newRecord = (obj) => {
+        let self = this;
+        let newObj = { id: obj.id, name: obj.name, city: obj.city, state: obj.state, status: 'active' };
+        this.setState({
+            dataList: [...this.state.dataList, newObj]
+        }, function() {
+            axios({
+                url: 'https://0fadggmpo7.execute-api.us-east-2.amazonaws.com/beta/sample-api',
+                method: 'POST',
+                data: {
+                    postInfo: newObj
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            }).then(res => {
+                if(res.data !== true) {
+                    self.setState({
+                        isError: true
+                    });
+                } else {
+                    self.setState({
+                        isError: false
+                    })
+                }
+            }).catch(err => {
+                self.setState({
+                    isError: true
+                })
+            });
+        });
+    };
+
     render() {
         const {
             isError,
             dataList
         } = this.state;
-
-        if(isError) {
-            return (
-                <div className="centerAlignment">
-                    <div>
-                        <h1> Oops... Please check your network (: </h1>
+        if(this.state.isLoaded) {
+            if(isError) {
+                return (
+                    <div className="centerAlignment">
+                        <div>
+                            <h1> Oops... Please check your network (: </h1>
+                        </div>
+                        <div style={{ marginTop: '20px' }}>
+                            <Loader dimensions={'20px'}/>
+                        </div>
+                        <div className="centerAlignment" style={{ marginTop: '100px' }}>
+                            <Button primary onClick={this.retry}> Retry </Button>
+                        </div>
                     </div>
-                    <div style={{ marginTop: '20px' }}>
-                        <Loader dimensions={'20px'}/>
+                );
+            } else {
+                return (
+                    <div className="centerAlignment">
+                        <TableInput length={dataList.length} newRecord={this.newRecord}/>
+                {this.state.dataList.length > 0 ? <TableHeader dataList={dataList}/> : <NoDataFound /> }
                     </div>
-                    <div className="centerAlignment" style={{ marginTop: '100px' }}>
-                        <Button primary onClick={this.retry}> Retry </Button>
-                    </div>
-                </div>
-            );
+                );
+            }
         } else {
-            return (
-                <div className="centerAlignment">
-                    <TableHeader dataList={dataList}/>
+            return <div className="centerAlignment">
+                    <Loader dimensions={'30px'} />
                 </div>
-            );
         }
     }
 }
 
-const TableHeader = (props) => {
+const NoDataFound = () => {
+    return (
+        <div className="centerAlignment">
+           <h4 style={{ fontSize: 20, marginTop: '100px' }}> No data found. Add user data. </h4>
+        </div>
+    )
+}
+
+const TableInput = (props) => {
+    const id = props.length + 1;
+    const name = useInput('');
+    const city = useInput('');
+    const state = useInput('');
+    
+    const onSubmit = e => {
+        let obj = {
+            id: id.toString(),
+            name: name.value,
+            city: city.value,
+            state: state.value
+        };
+        props.newRecord(obj);
+    };
+
     return (
         <div>
+            <Input
+                {...name}
+                placeholder={'Name'}
+                className="inputField"
+            />
+            <Input
+                {...city}
+                placeholder={'City'}
+                className="inputField"
+            />
+            <Input
+                {...state}
+                placeholder={'State'}
+                className="inputField"
+            />
+            <Button primary size="medium" onClick={onSubmit}>
+                Submit
+            </Button>
+        </div>
+    )
+}
+
+const TableHeader = (props) => {
+    return (
+        <div style={{ marginTop: '30px' }}>
             <Table basic='very'
                    columns={6}
                    size='large'
@@ -98,7 +191,7 @@ const TableHeader = (props) => {
 class TableContent extends React.Component {
 
     state = {
-        dataList: [],
+        dataList: this.props.dataList,
         editableRowId : null,
         name: '',
         state: '',
@@ -180,10 +273,12 @@ class TableContent extends React.Component {
         let {
             editableRowId
         } = this.state;
+        console.log('heare', this.state.dataList);
 
         if (this.state.dataList.length <= 0)
             return null;
         else {
+            console.log('heare')
             return (
                 this.state.dataList && this.state.dataList.length > 0 && this.state.dataList.map((info, index) => {
                     {
