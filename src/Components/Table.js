@@ -2,9 +2,12 @@ import React from 'react';
 import axios from 'axios';
 import {
     Table,
-    Button
+    Button,
+    Input
 } from 'semantic-ui-react';
 import Loader from "./Loader";
+import { useInput } from './useInput';
+import '../App.css';
 
 export default class TableComponent extends React.Component {
 
@@ -39,6 +42,40 @@ export default class TableComponent extends React.Component {
         window.location.reload();
     };
 
+    newRecord = (obj) => {
+        let self = this;
+        let newObj = { id: obj.id, name: obj.name, city: obj.city, state: obj.state, status: 'active' };
+        this.setState({
+            dataList: [...this.state.dataList, newObj]
+        }, function() {
+            axios({
+                url: 'https://0fadggmpo7.execute-api.us-east-2.amazonaws.com/beta/sample-api',
+                method: 'POST',
+                data: {
+                    postInfo: newObj
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            }).then(res => {
+                if(res.data !== true) {
+                    self.setState({
+                        isError: true
+                    });
+                } else {
+                    self.setState({
+                        isError: false
+                    })
+                }
+            }).catch(err => {
+                self.setState({
+                    isError: true
+                })
+            });
+        });
+    };
+
     render() {
         const {
             isError,
@@ -62,6 +99,7 @@ export default class TableComponent extends React.Component {
         } else {
             return (
                 <div className="centerAlignment">
+                    <TableInput length={dataList.length} newRecord={this.newRecord}/>
                     <TableHeader dataList={dataList}/>
                 </div>
             );
@@ -69,9 +107,49 @@ export default class TableComponent extends React.Component {
     }
 }
 
-const TableHeader = (props) => {
+const TableInput = (props) => {
+    const id = props.length + 1;
+    const name = useInput('');
+    const city = useInput('');
+    const state = useInput('');
+    
+    const onSubmit = e => {
+        let obj = {
+            id: id.toString(),
+            name: name.value,
+            city: city.value,
+            state: state.value
+        };
+        props.newRecord(obj);
+    };
+
     return (
         <div>
+            <Input
+                {...name}
+                placeholder={'Name'}
+                className="inputField"
+            />
+            <Input
+                {...city}
+                placeholder={'City'}
+                className="inputField"
+            />
+            <Input
+                {...state}
+                placeholder={'State'}
+                className="inputField"
+            />
+            <Button primary size="medium" onClick={onSubmit}>
+                Submit
+            </Button>
+        </div>
+    )
+}
+
+const TableHeader = (props) => {
+    return (
+        <div style={{ marginTop: '30px' }}>
             <Table basic='very'
                    columns={6}
                    size='large'
